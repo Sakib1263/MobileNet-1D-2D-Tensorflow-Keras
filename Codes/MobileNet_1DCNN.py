@@ -1,6 +1,8 @@
-"""MobileNet_v2 1DCNN in Keras.
-Reference: [Inverted Residuals and Linear Bottlenecks Mobile Networks for Classification, Detection and Segmentation]
-(https://arxiv.org/abs/1801.04381)"""
+"""MobileNet 1DCNN in Keras.
+MovileNet_v1: https://arxiv.org/abs/1704.04861 [MobileNets: Efficient Convolutional Neural Networks for Mobile Vision Applications]
+MovileNet_v2: https://arxiv.org/abs/1801.04381 [Inverted Residuals and Linear Bottlenecks Mobile Networks for Classification, Detection and Segmentation]
+MovileNet_v3: https://arxiv.org/abs/1905.02244 [Searching for MobileNetV3]
+"""
 
 
 import tensorflow as tf
