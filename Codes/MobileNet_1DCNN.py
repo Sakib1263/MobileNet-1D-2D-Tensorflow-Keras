@@ -17,6 +17,18 @@ def Conv_1D_block(inputs, model_width, kernel, strides):
     return x
 
 
+def Conv_1D_block_2(inputs, model_width, kernel, strides, nl):
+    # This function defines a 1D convolution operation with BN and activation.
+    x = tf.keras.layers.Conv1D(model_width, kernel, strides=strides, padding="same", kernel_initializer="he_normal")(inputs)
+    x = tf.keras.layers.BatchNormalization()(x)
+    if nl == 'HS':
+        x = x * tf.keras.activations.relu(x + 3.0, max_value=6.0) / 6.0
+    elif nl == 'RE':
+        x = tf.keras.activations.relu(x, max_value=6.0)
+
+    return x
+
+
 def Conv_1D_DW(inputs, model_width, kernel, strides, alpha):
     # 1D Depthwise Separable Convolutional Block with BatchNormalization
     model_width = int(model_width * alpha)
@@ -48,44 +60,6 @@ def bottleneck_block(inputs, filters, kernel, t, alpha, s, r=False):
     return x
 
 
-def inverted_residual_block(inputs, filters, kernel, t, alpha, strides, n):
-    if strides == 1:
-        x = bottleneck_block(inputs, filters, kernel, t, alpha, strides, True)
-    else:
-        x = bottleneck_block(inputs, filters, kernel, t, alpha, strides)
-
-    for i in range(1, n):
-        x = bottleneck_block(x, filters, kernel, t, alpha, 1, True)
-
-    return x
-
-
-def Conv_1D_block_2(inputs, model_width, kernel, strides, nl):
-    # This function defines a 1D convolution operation with BN and activation.
-    x = tf.keras.layers.Conv1D(model_width, kernel, strides=strides, padding="same", kernel_initializer="he_normal")(inputs)
-    x = tf.keras.layers.BatchNormalization()(x)
-    if nl == 'HS':
-        x = x * tf.keras.activations.relu(x + 3.0, max_value=6.0) / 6.0
-    if nl == 'RE':
-        x = tf.keras.activations.relu(x, max_value=6.0)
-
-    return x
-
-
-def _squeeze(inputs):
-    # This function defines a squeeze structure.
-
-    input_channels = int(inputs.shape[-1])
-
-    x = tf.keras.layers.GlobalAveragePooling1D()(inputs)
-    x = tf.keras.layers.Dense(input_channels, activation='relu')(x)
-    x = tf.keras.layers.Dense(input_channels, activation='hard_sigmoid')(x)
-    x = tf.keras.layers.Reshape((1, input_channels))(x)
-    x = tf.keras.layers.Multiply()([inputs, x])
-
-    return x
-
-
 def bottleneck_block_2(inputs, filters, kernel, e, s, squeeze, nl, alpha):
     # This function defines a basic bottleneck structure.
 
@@ -113,6 +87,32 @@ def bottleneck_block_2(inputs, filters, kernel, e, s, squeeze, nl, alpha):
 
     if r:
         x = tf.keras.layers.Add()([x, inputs])
+
+    return x
+
+
+def inverted_residual_block(inputs, filters, kernel, t, alpha, strides, n):
+    if strides == 1:
+        x = bottleneck_block(inputs, filters, kernel, t, alpha, strides, True)
+    else:
+        x = bottleneck_block(inputs, filters, kernel, t, alpha, strides)
+
+    for i in range(1, n):
+        x = bottleneck_block(x, filters, kernel, t, alpha, 1, True)
+
+    return x
+
+
+def _squeeze(inputs):
+    # This function defines a squeeze structure.
+
+    input_channels = int(inputs.shape[-1])
+
+    x = tf.keras.layers.GlobalAveragePooling1D()(inputs)
+    x = tf.keras.layers.Dense(input_channels, activation='relu')(x)
+    x = tf.keras.layers.Dense(input_channels, activation='hard_sigmoid')(x)
+    x = tf.keras.layers.Reshape((1, input_channels))(x)
+    x = tf.keras.layers.Multiply()([inputs, x])
 
     return x
 
@@ -198,12 +198,10 @@ class MobileNet:
         x = bottleneck_block_2(x, 96, 5, e=576, s=1, squeeze=True, nl='HS', alpha=self.alpha)
         x = bottleneck_block_2(x, 96, 5, e=576, s=1, squeeze=True, nl='HS', alpha=self.alpha)
         x = Conv_1D_block_2(x, 576, 1, strides=1, nl='HS')
-
-        x = tf.keras.layers.AveragePooling1D(x)
         x = x * tf.keras.activations.relu(x + 3.0, max_value=6.0) / 6.0
         x = tf.keras.layers.Conv1D(1280, 1, padding='same')(x)
+        
         outputs = self.MLP(x)
-
         model = tf.keras.Model(inputs, outputs)
 
         return model
@@ -228,13 +226,10 @@ class MobileNet:
         x = bottleneck_block_2(x, 160, 5, e=960, s=1, squeeze=True, nl='HS', alpha=self.alpha)
         x = bottleneck_block_2(x, 160, 5, e=960, s=1, squeeze=True, nl='HS', alpha=self.alpha)
         x = Conv_1D_block_2(x, 960, 1, strides=1, nl='HS')
-
-        x = tf.keras.layers.AveragePooling1D(x)
         x = x * tf.keras.activations.relu(x + 3.0, max_value=6.0) / 6.0
         x = tf.keras.layers.Conv1D(1280, 1, padding='same')(x)
 
         outputs = self.MLP(x)
-
         model = tf.keras.Model(inputs, outputs)
 
         return model
