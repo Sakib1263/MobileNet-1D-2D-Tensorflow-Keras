@@ -198,12 +198,10 @@ class MobileNet:
         x = bottleneck_block_2(x, 96, 5, e=576, s=1, squeeze=True, nl='HS', alpha=self.alpha)
         x = bottleneck_block_2(x, 96, 5, e=576, s=1, squeeze=True, nl='HS', alpha=self.alpha)
         x = Conv_2D_block_2(x, 576, 1, strides=1, nl='HS')
-
-        x = tf.keras.layers.AveragePooling2D(x)
         x = x * tf.keras.activations.relu(x + 3.0, max_value=6.0) / 6.0
         x = tf.keras.layers.Conv2D(1280, 1, padding='same')(x)
+        
         outputs = self.MLP(x)
-
         model = tf.keras.Model(inputs, outputs)
 
         return model
@@ -228,13 +226,10 @@ class MobileNet:
         x = bottleneck_block_2(x, 160, 5, e=960, s=1, squeeze=True, nl='HS', alpha=self.alpha)
         x = bottleneck_block_2(x, 160, 5, e=960, s=1, squeeze=True, nl='HS', alpha=self.alpha)
         x = Conv_2D_block_2(x, 960, 1, strides=1, nl='HS')
-
-        x = tf.keras.layers.AveragePooling2D(x)
         x = x * tf.keras.activations.relu(x + 3.0, max_value=6.0) / 6.0
         x = tf.keras.layers.Conv2D(1280, 1, padding='same')(x)
 
         outputs = self.MLP(x)
-
         model = tf.keras.Model(inputs, outputs)
 
         return model
