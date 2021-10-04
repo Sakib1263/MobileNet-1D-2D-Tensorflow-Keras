@@ -1,8 +1,9 @@
 # MobileNet-1D-2D-Tensorflow-Keras  
-Supported Models: 
-1. MobileNetV1 [1]
-2. MobileNetV2 [2]
-3. MobileNetV3 (Small, Large) [3]
+Supported Models:  
+1. MobileNetV1 [1]  
+2. MobileNetV2 [2]  
+3. MobileNetV3_Small [3]  
+4. MobileNetV3_Large [3]  
 
 ## MobileNetV1  
 The MobileNetV1 Architeture implements a Standard Convolution Layer and a DepthWise Separable Convolution Layer iteratively in turn. The DepthWise Separable Convolution Layers consist of a series of a DepthWise and a PointWise Convolution Layer. The constituting blocks for both types of Convolutional Layers are shown below [1]:  
